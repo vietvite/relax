@@ -4,6 +4,10 @@
 ```
 yarn install
 ```
+### Compiles and run electron app
+```
+yarn electron:serve
+```
 
 ### Compiles and hot-reloads for development
 ```
