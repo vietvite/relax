@@ -21,5 +21,10 @@ export default new Router({
       // which is lazy-loaded when the route is visited.
       component: () => import(/* webpackChunkName: "Player" */ './views/Player.vue'),
     },
+    {
+      path: '/setting',
+      name: 'setting',
+      component: () => import('./views/Setting.vue'),
+    },
   ],
 });

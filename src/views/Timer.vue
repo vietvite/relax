@@ -1,11 +1,7 @@
 <template>
   <div>
     <!-- Counter -->
-    <progress-bar
-      :workTime="this.workTime"
-      :shortRest="this.shortRest"
-      :longRest="this.longRest"
-    ></progress-bar>
+    <progress-bar :workTime="this.workTime" :shortRest="this.shortRest" :longRest="this.longRest"></progress-bar>
   </div>
 </template>
 
@@ -20,13 +16,12 @@ export default {
     return {
       isActive: false,
 
-      workTime: 25,
+      workTime: 3,
       shortRest: 1,
-      longRest: 15
+      longRest: 2
     };
   },
-  methods: {
-  }
+  methods: {}
 };
 </script>
 

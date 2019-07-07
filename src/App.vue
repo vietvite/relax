@@ -1,7 +1,10 @@
 <template>
-  <div id="app" class="bg-gray-200 min-h-screen">
+  <!-- bg-gray-300 -->
+  <div id="app" class="bg-gray-300 min-h-screen">
     <MainMenu />
-    <router-view />
+    <keep-alive>
+      <router-view />
+    </keep-alive>
   </div>
 </template>
 

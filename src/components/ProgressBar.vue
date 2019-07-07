@@ -1,7 +1,7 @@
 <template>
   <div class="flex-none justify-center">
     <div v-if="isActive">
-      <div class="svg-rotate flex justify-center">
+      <div @click="pauseTimer" class="svg-rotate flex justify-center">
         <div class="absolute pt-28 text-7xl text-orange-400">{{ time }}</div>
         <svg :width="width" :height="height" viewBox="0 0 120 120">
           <circle
@@ -26,13 +26,13 @@
       </div>
       <div class="flex justify-center mt-4">
         <button
-          @click="stopCounter"
+          @click="stopTimer"
           class="pt-3 pb-3 pl-6 pr-6 rounded-full text-white font-semibold hover:bg-red-600 bg-red-700 focus:outline-none"
         >Stop</button>
       </div>
     </div>
     <!-- Start button -->
-    <div v-else @click="startCounter" class="flex justify-center ml-8 mt-8">
+    <div v-else @click="startTimer" class="flex justify-center ml-8 mt-8">
       <svg
         viewBox="0 0 1792 1792"
         xmlns="http://www.w3.org/2000/svg"
@@ -54,22 +54,18 @@ const px = v => v + "px";
 export default {
   name: "ProgressBar",
   props: ["workTime", "shortRest", "longRest"],
-  created() {
-    console.log("Trong created");
-    console.log({
-      work: this.workTime,
-      short: this.shortRest,
-      long: this.longRest
-    });
-    console.log({
-      min: this.min,
-      sec: this.sec
-    });
 
+  beforeCreate() {
+    console.log('BEFORE CREATE progess bar');
+    
+  },
+  created() {
+    console.log('CREATED progess bar');
+    
     this.defaultOptions = {
       progress: {
         color: "#68D391",
-        backgroundColor: "#E2E8F0"
+        backgroundColor: "#CBD5E0"
       },
       layout: {
         height: 350,
@@ -79,28 +75,49 @@ export default {
       }
     };
   },
+  beforeMount() {
+    console.log('BEFORE MOUNT progess bar');
+    
+  },
   mounted() {
-    console.log("Trong mounted");
-    console.log({
-      work: this.workTime,
-      short: this.shortRest,
-      long: this.longRest
-    });
-    console.log({
-      min: this.min,
-      sec: this.sec
-    });
+    console.log('MOUNTED progess bar');
+    
     this.updateValue(this.value);
-    this.updateTimer();
+    this.resetTime();
+  },
+  beforeUpdate() {
+    console.log('BEFORE update progess bar');
+    
+  },
+  updated() {
+    console.log('UPDATED progess bar');
+    
+  },
+  beforeDestroy() {
+    console.log('BEFORE DESTROY progess bar');
+    clearInterval(this.intervalVal);
+  },
+  destroyed() {
+    console.log('DESTROYED progess bar');
+    
   },
 
   data() {
     return {
       isActive: false,
+      isPause: false,
       value: 100,
       min: Number,
       sec: Number,
       intervalVal: null,
+
+      /** State
+       * cycle 1/4 - state 1 - work time
+       * cycle 2/4 - state 2 - short rest
+       * cycle 3/4 - state 3 - work time
+       * cycle 4/4 - state 4 - long rest
+       */
+      state: 1,
 
       defaultOptions: Object,
       rectHeight: 0,
@@ -112,33 +129,69 @@ export default {
     };
   },
   methods: {
-    startCounter() {
+    startTimer() {
       this.isActive = true;
 
       var totalSec = this.min * 60;
       var countSec = totalSec;
 
       this.intervalVal = setInterval(() => {
+        if(!this.isPause) {
+          console.log('Paused');
+          countSec--;
+        }
         countSec--;
         this.value = ~~((countSec * 100) / totalSec); // progress bar value
         this.min = ~~(countSec / 60);
-        this.sec = ~~(countSec % 60);
+        this.sec = countSec % 60;
 
         if (countSec <= 0) {
           clearInterval(this.intervalVal);
-          this.stopCounter();
+
+          // Set state
+          this.state++;
+          if (this.state > 5) this.state = 1;
+
+          // Set work time - state = 1 || 3
+          if (this.state % 2 !== 0 && this.state !== 5) {
+            console.log('work time');
+            
+            this.setTime(this.workTime);
+          }
+          // Set rest time - state = 2 || 4
+          if (this.state === 2) {
+            console.log('rest time');
+            
+            this.setTime(this.shortRest);
+          }
+          // Set long rest
+          if(this.state === 4) {
+            console.log('long rest');
+            
+            this.setTime(this.longRest);
+          }
+          console.log({ state: this.state });
+          console.log({ min: this.min });
+
+          return this.startTimer();
         }
       }, 1000);
     },
-    stopCounter() {
+    pauseTimer() {
+      this.isPause = !this.isPause;
+    },
+    stopTimer() {
       clearInterval(this.intervalVal);
       this.isActive = false;
       this.value = 100;
-      this.updateTimer();
+      this.resetTime();
     },
-    updateTimer() {
+    setTime(minutes) {
+      this.min = minutes;
+    },
+    resetTime() {
       this.min = this.workTime;
-      this.sec = (this.workTime * 60) % 60;
+      this.sec = (this.min * 60) % 60;
     },
     updateValue(val) {
       let invertedVal = 100 - val;
