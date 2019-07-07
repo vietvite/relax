@@ -1,25 +1,47 @@
 <template>
   <div class="flex-none justify-center">
-    <div class="svg-rotate flex justify-center">
-      <div class="absolute pt-28 text-7xl text-orange-400">{{ time }}</div>
-      <svg :width="width" :height="height" viewBox="0 0 120 120">
-        <circle
-          cx="60"
-          cy="60"
-          :r="radiusCircle"
-          fill="none"
-          :stroke="defaultOptions.progress.backgroundColor"
-          :stroke-width="defaultOptions.layout.strokeWidth"
-        />
-        <circle
-          cx="60"
-          cy="60"
-          :r="radiusCircle"
-          fill="none"
-          :stroke="defaultOptions.progress.color"
-          :stroke-width="defaultOptions.layout.strokeWidth"
-          :stroke-dasharray="strokeCircle"
-          :stroke-dashoffset="strokeCircleOffset"
+    <div v-if="isActive">
+      <div class="svg-rotate flex justify-center">
+        <div class="absolute pt-28 text-7xl text-orange-400">{{ time }}</div>
+        <svg :width="width" :height="height" viewBox="0 0 120 120">
+          <circle
+            cx="60"
+            cy="60"
+            :r="radiusCircle"
+            fill="none"
+            :stroke="defaultOptions.progress.backgroundColor"
+            :stroke-width="defaultOptions.layout.strokeWidth"
+          />
+          <circle
+            cx="60"
+            cy="60"
+            :r="radiusCircle"
+            fill="none"
+            :stroke="defaultOptions.progress.color"
+            :stroke-width="defaultOptions.layout.strokeWidth"
+            :stroke-dasharray="strokeCircle"
+            :stroke-dashoffset="strokeCircleOffset"
+          />
+        </svg>
+      </div>
+      <div class="flex justify-center mt-4">
+        <button
+          @click="stopCounter"
+          class="pt-3 pb-3 pl-6 pr-6 rounded-full text-white font-semibold hover:bg-red-600 bg-red-700 focus:outline-none"
+        >Stop</button>
+      </div>
+    </div>
+    <!-- Start button -->
+    <div v-else @click="startCounter" class="flex justify-center ml-8 mt-8">
+      <svg
+        viewBox="0 0 1792 1792"
+        xmlns="http://www.w3.org/2000/svg"
+        width="200"
+        height="200"
+        fill="currentColor"
+      >
+        <path
+          d="M1576 927l-1328 738q-23 13-39.5 3t-16.5-36v-1472q0-26 16.5-36t39.5 3l1328 738q23 13 23 31t-23 31z"
         />
       </svg>
     </div>
@@ -30,8 +52,19 @@
 const s = x => x + "s";
 const px = v => v + "px";
 export default {
+  name: "ProgressBar",
+  props: ["workTime", "shortRest", "longRest"],
   created() {
-    console.log("Created progress bar");
+    console.log("Trong created");
+    console.log({
+      work: this.workTime,
+      short: this.shortRest,
+      long: this.longRest
+    });
+    console.log({
+      min: this.min,
+      sec: this.sec
+    });
 
     this.defaultOptions = {
       progress: {
@@ -47,17 +80,28 @@ export default {
     };
   },
   mounted() {
-    console.log("Mounted progress bar");
+    console.log("Trong mounted");
+    console.log({
+      work: this.workTime,
+      short: this.shortRest,
+      long: this.longRest
+    });
     console.log({
       min: this.min,
       sec: this.sec
     });
     this.updateValue(this.value);
+    this.updateTimer();
   },
-  props: ['value', 'sec', 'min'],
-  name: "ProgressBar",
+
   data() {
     return {
+      isActive: false,
+      value: 100,
+      min: Number,
+      sec: Number,
+      intervalVal: null,
+
       defaultOptions: Object,
       rectHeight: 0,
       rectY: 90,
@@ -68,49 +112,46 @@ export default {
     };
   },
   methods: {
+    startCounter() {
+      this.isActive = true;
+
+      var totalSec = this.min * 60;
+      var countSec = totalSec;
+
+      this.intervalVal = setInterval(() => {
+        countSec--;
+        this.value = ~~((countSec * 100) / totalSec); // progress bar value
+        this.min = ~~(countSec / 60);
+        this.sec = ~~(countSec % 60);
+
+        if (countSec <= 0) {
+          clearInterval(this.intervalVal);
+          this.stopCounter();
+        }
+      }, 1000);
+    },
+    stopCounter() {
+      clearInterval(this.intervalVal);
+      this.isActive = false;
+      this.value = 100;
+      this.updateTimer();
+    },
+    updateTimer() {
+      this.min = this.workTime;
+      this.sec = (this.workTime * 60) % 60;
+    },
     updateValue(val) {
       let invertedVal = 100 - val;
-      if (this.cylinder) {
-        this.rectHeight = 80 - invertedVal * 0.8;
-        this.rectY = invertedVal * 0.8 + 20;
-        this.topCy = -invertedVal * -0.8 + 20;
-        this.cylText = 100 - invertedVal + "%";
-      } else if (this.circle) {
-        this.strokeCircle = 2 * Math.PI * this.radiusCircle;
-        this.strokeCircleOffset = this.strokeCircle * ((100 - val) / 100);
-      }
-    },
-    LightenColor: function(color, level) {
-      var usePound = false;
-      if (color[0] == "#") {
-        color = color.slice(1);
-        usePound = true;
-      }
-
-      var num = parseInt(color, 16);
-      var r = (num >> 16) + level;
-      if (r > 255) r = 255;
-      else if (r < 0) r = 0;
-
-      var b = ((num >> 8) & 0x00ff) + level;
-
-      if (b > 255) b = 255;
-      else if (b < 0) b = 0;
-
-      var g = (num & 0x0000ff) + level;
-
-      if (g > 255) g = 255;
-      else if (g < 0) g = 0;
-
-      return (usePound ? "#" : "") + (g | (b << 8) | (r << 16)).toString(16);
+      this.strokeCircle = 2 * Math.PI * this.radiusCircle;
+      this.strokeCircleOffset = this.strokeCircle * ((100 - val) / 100);
     }
   },
   computed: {
     time() {
       return (
-        (this.min < 10 ? "0" + this.min : this.min)
-         + ":" +
-         (this.sec < 10 ? "0" + this.sec : this.sec)
+        (this.min < 10 ? "0" + this.min : this.min) +
+        ":" +
+        (this.sec < 10 ? "0" + this.sec : this.sec)
       );
     },
     circle() {
@@ -126,12 +167,6 @@ export default {
   watch: {
     value: function(val) {
       this.updateValue(val);
-    },
-    min: function(val) {
-      this.min = val;
-    },
-    sec: function(val) {
-      this.sec = val;
     }
   }
 };
