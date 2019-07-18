@@ -1,6 +1,6 @@
 <template>
   <div class="flex-none justify-center">
-    <div v-if="isActive">
+    <div v-if="this.state === 1 || this.state === 2">
       <div @click="pauseTimer" class="svg-rotate flex justify-center">
         <div class="absolute pt-28 text-7xl text-orange-400">{{ time }}</div>
         <svg :width="width" :height="height" viewBox="0 0 120 120">
@@ -32,7 +32,7 @@
       </div>
     </div>
     <!-- Start button -->
-    <div v-else @click="startTimer" class="flex justify-center ml-8 mt-8">
+    <div v-if="this.state === 0" @click="startTimer" class="flex justify-center ml-8 mt-8">
       <svg
         viewBox="0 0 1792 1792"
         xmlns="http://www.w3.org/2000/svg"
@@ -56,12 +56,11 @@ export default {
   props: ["workTime", "shortRest", "longRest"],
 
   beforeCreate() {
-    console.log('BEFORE CREATE progess bar');
-    
+    // console.log("BEFORE CREATE progess bar");
   },
   created() {
-    console.log('CREATED progess bar');
-    
+    // console.log("CREATED progess bar");
+
     this.defaultOptions = {
       progress: {
         color: "#68D391",
@@ -76,36 +75,32 @@ export default {
     };
   },
   beforeMount() {
-    console.log('BEFORE MOUNT progess bar');
-    
+    // console.log("BEFORE MOUNT progess bar");
   },
   mounted() {
-    console.log('MOUNTED progess bar');
-    
+    // console.log("MOUNTED progess bar");
+
     this.updateValue(this.value);
     this.resetTime();
   },
   beforeUpdate() {
-    console.log('BEFORE update progess bar');
-    
+    // console.log("BEFORE update progess bar");
   },
   updated() {
-    console.log('UPDATED progess bar');
-    
+    // console.log("UPDATED progess bar");
+    console.log({ state: this.state });
   },
   beforeDestroy() {
-    console.log('BEFORE DESTROY progess bar');
+    // console.log("BEFORE DESTROY progess bar");
     clearInterval(this.intervalVal);
   },
   destroyed() {
-    console.log('DESTROYED progess bar');
-    
+    // console.log("DESTROYED progess bar");
   },
 
   data() {
     return {
-      isActive: false,
-      isPause: false,
+      state: 0, // 0 = idle, 1 = running, 2 = paused, 3 = resumed
       value: 100,
       min: Number,
       sec: Number,
@@ -117,7 +112,7 @@ export default {
        * cycle 3/4 - state 3 - work time
        * cycle 4/4 - state 4 - long rest
        */
-      state: 1,
+      cycle: 1,
 
       defaultOptions: Object,
       rectHeight: 0,
@@ -130,64 +125,82 @@ export default {
   },
   methods: {
     startTimer() {
-      this.isActive = true;
+      this.state = 1;
+      this.interval();
+    },
+    interval() {
+      var totalSec;
+      if (this.sec === 0) {
+        totalSec = this.min * 60;
+      } else {
+        totalSec = this.min * 60 + this.sec;
+      }
 
-      var totalSec = this.min * 60;
       var countSec = totalSec;
 
       this.intervalVal = setInterval(() => {
-        if(!this.isPause) {
-          console.log('Paused');
-          countSec--;
-        }
         countSec--;
         this.value = ~~((countSec * 100) / totalSec); // progress bar value
         this.min = ~~(countSec / 60);
         this.sec = countSec % 60;
 
+        console.log({ min: this.min, sec: this.sec });
+
         if (countSec <= 0) {
           clearInterval(this.intervalVal);
 
-          // Set state
-          this.state++;
-          if (this.state > 5) this.state = 1;
+          this.cycle++;
+          if (this.cycle > 5) this.cycle = 1; // new cycle
 
-          // Set work time - state = 1 || 3
-          if (this.state % 2 !== 0 && this.state !== 5) {
-            console.log('work time');
-            
+          // work time - cycle = 1 || 3
+          if (this.cycle % 2 !== 0 && this.cycle !== 5) {
             this.setTime(this.workTime);
           }
-          // Set rest time - state = 2 || 4
-          if (this.state === 2) {
-            console.log('rest time');
-            
+          // rest time - cycle = 2 || 4
+          if (this.cycle === 2) {
             this.setTime(this.shortRest);
           }
-          // Set long rest
-          if(this.state === 4) {
-            console.log('long rest');
-            
+          // long rest
+          if (this.cycle === 4) {
             this.setTime(this.longRest);
           }
-          console.log({ state: this.state });
-          console.log({ min: this.min });
 
           return this.startTimer();
         }
       }, 1000);
     },
     pauseTimer() {
-      this.isPause = !this.isPause;
+      // is running
+      if (this.state === 1) {
+        clearInterval(this.intervalVal);
+        this.state = 2;
+        return;
+      }
+      // is pausing
+      if (this.state === 2) {
+        this.interval();
+        this.state = 1;
+        return;
+      }
     },
     stopTimer() {
       clearInterval(this.intervalVal);
-      this.isActive = false;
+      this.state = 0;
       this.value = 100;
       this.resetTime();
     },
-    setTime(minutes) {
-      this.min = minutes;
+    setTime() {
+      if (arguments.length === 1) {
+        // only minute
+        this.min = arguments[0];
+        return;
+      }
+      if (arguments.length === 2) {
+        // both minute and second
+        this.min = arguments[0];
+        this.sec = arguments[1];
+        return;
+      }
     },
     resetTime() {
       this.min = this.workTime;
