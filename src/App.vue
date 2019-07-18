@@ -1,5 +1,4 @@
 <template>
-  <!-- bg-gray-300 -->
   <div id="app" class="bg-gray-300 min-h-screen">
     <MainMenu />
     <keep-alive>
@@ -17,6 +16,4 @@ export default {
 };
 </script>
 
-
-<style src="./assets/main.css">
-</style>
+<style src="./assets/main.css"></style>

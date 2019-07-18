@@ -1,28 +1,43 @@
 <template>
   <div class="flex-none justify-center">
     <div v-if="this.state === 1 || this.state === 2">
-      <div @click="pauseTimer" class="svg-rotate flex justify-center">
+      <div @click="pauseTimer" class="flex justify-center">
+        <!-- Pause icon -->
+        <div class="absolute pt-20" :class="{ hidden: this.state === 1, block: this.state === 2 }">
+          <svg width="20" height="20" viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg">
+            <path
+              d="M1664 192v1408q0 26-19 45t-45 19h-512q-26 0-45-19t-19-45v-1408q0-26 19-45t45-19h512q26 0 45 19t19 45zm-896 0v1408q0 26-19 45t-45 19h-512q-26 0-45-19t-19-45v-1408q0-26 19-45t45-19h512q26 0 45 19t19 45z"
+            />
+          </svg>
+        </div>
+        <!-- End: Pause icon -->
+
         <div class="absolute pt-28 text-7xl text-orange-400">{{ time }}</div>
-        <svg :width="width" :height="height" viewBox="0 0 120 120">
-          <circle
-            cx="60"
-            cy="60"
-            :r="radiusCircle"
-            fill="none"
-            :stroke="defaultOptions.progress.backgroundColor"
-            :stroke-width="defaultOptions.layout.strokeWidth"
-          />
-          <circle
-            cx="60"
-            cy="60"
-            :r="radiusCircle"
-            fill="none"
-            :stroke="defaultOptions.progress.color"
-            :stroke-width="defaultOptions.layout.strokeWidth"
-            :stroke-dasharray="strokeCircle"
-            :stroke-dashoffset="strokeCircleOffset"
-          />
-        </svg>
+
+        <!-- circle -->
+        <div class="svg-rotate">
+          <svg :width="width" :height="height" viewBox="0 0 120 120">
+            <circle
+              cx="60"
+              cy="60"
+              :r="radiusCircle"
+              fill="none"
+              :stroke="defaultOptions.progress.backgroundColor"
+              :stroke-width="defaultOptions.layout.strokeWidth"
+            />
+            <circle
+              cx="60"
+              cy="60"
+              :r="radiusCircle"
+              fill="none"
+              :stroke="defaultOptions.progress.color"
+              :stroke-width="defaultOptions.layout.strokeWidth"
+              :stroke-dasharray="strokeCircle"
+              :stroke-dashoffset="strokeCircleOffset"
+            />
+          </svg>
+        </div>
+        <!-- End: Circle -->
       </div>
       <div class="flex justify-center mt-4">
         <button
@@ -214,11 +229,9 @@ export default {
   },
   computed: {
     time() {
-      return (
-        (this.min < 10 ? "0" + this.min : this.min) +
-        ":" +
-        (this.sec < 10 ? "0" + this.sec : this.sec)
-      );
+      let min = this.min < 10 ? "0" + this.min : this.min;
+      let sec = this.sec < 10 ? "0" + this.sec : this.sec;
+      return min + ":" + sec;
     },
     circle() {
       return this.defaultOptions.layout.type === "circle";

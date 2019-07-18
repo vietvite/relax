@@ -14,16 +14,11 @@ export default {
   },
   data() {
     return {
-      isActive: false,
-
-      workTime: 3,
-      shortRest: 1,
-      longRest: 2
+      workTime: 25,
+      shortRest: 5,
+      longRest: 15
     };
   },
   methods: {}
 };
 </script>
-
-<style lang="scss" scoped>
-</style>
