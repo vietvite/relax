@@ -14,9 +14,9 @@ export default {
   },
   data() {
     return {
-      workTime: 25,
-      shortRest: 5,
-      longRest: 15
+      workTime: 1,
+      shortRest: 0.5,
+      longRest: 0.7
     };
   },
   methods: {}

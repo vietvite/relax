@@ -6,7 +6,12 @@
 
 <script>
 export default {
-  name: 'Setting'
+  name: "Setting",
+  data() {
+    return {
+      theme: "dark" // light
+    };
+  }
 };
 </script>
 

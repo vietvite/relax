@@ -1,0 +1,6 @@
+Xanh tối:	344e5c
+Xanh tối:	456576 - hover 
+Xanh ngọc:	4ab19d
+Vàng:		efc958
+Cam:		e17a47
+Đỏ:			ef3d59

@@ -141,6 +141,7 @@ export default {
   methods: {
     startTimer() {
       this.state = 1;
+      // this.value = 100;
       this.interval();
     },
     interval() {
@@ -150,16 +151,19 @@ export default {
       } else {
         totalSec = this.min * 60 + this.sec;
       }
+      console.log({ totalSec }); // Error cirle line reset to 100% when resume
 
       var countSec = totalSec;
 
       this.intervalVal = setInterval(() => {
+        console.log({ countSec });
+
         countSec--;
         this.value = ~~((countSec * 100) / totalSec); // progress bar value
         this.min = ~~(countSec / 60);
         this.sec = countSec % 60;
 
-        console.log({ min: this.min, sec: this.sec });
+        console.log({ min: this.min, sec: this.sec, value: this.value });
 
         if (countSec <= 0) {
           clearInterval(this.intervalVal);
@@ -189,29 +193,32 @@ export default {
       if (this.state === 1) {
         clearInterval(this.intervalVal);
         this.state = 2;
+        console.log({ valueWhenPause: this.value });
+
         return;
       }
       // is pausing
       if (this.state === 2) {
         this.interval();
         this.state = 1;
+        console.log({ valueWhenResume: this.value });
+
         return;
       }
     },
     stopTimer() {
       clearInterval(this.intervalVal);
       this.state = 0;
-      this.value = 100;
       this.resetTime();
     },
     setTime() {
+      // only minute
       if (arguments.length === 1) {
-        // only minute
         this.min = arguments[0];
         return;
       }
+      // both minute and second
       if (arguments.length === 2) {
-        // both minute and second
         this.min = arguments[0];
         this.sec = arguments[1];
         return;
